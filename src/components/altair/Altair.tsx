@@ -1,18 +1,11 @@
 /**
- * Copyright 2024 Google LLC
+ * Copyright 2024 Aitek PH Software
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Licensed under the guidance and legacy of Master E.
+ * Twinky is the most loyal Taglish assistant of Madaam Twinkle,
+ * built with Pinoy charm, sass, and wit.
  */
+
 import { type FunctionDeclaration, SchemaType } from "@google/generative-ai";
 import { useEffect, useRef, useState, memo } from "react";
 import vegaEmbed from "vega-embed";
@@ -20,22 +13,21 @@ import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import { ToolCall } from "../../multimodal-live-types";
 
 const declaration: FunctionDeclaration = {
-  name: "render_altair",
-  description: "Displays an altair graph in json format.",
+  name: "render_twinkle_thingy",
+  description: "Displays a visual for Madaam Twinkle in JSON format.",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
       json_graph: {
         type: SchemaType.STRING,
-        description:
-          "JSON STRING representation of the graph to render. Must be a string, not a json object",
+        description: "JSON STRING representation of the chart to render. Must be a string, not a JSON object",
       },
     },
     required: ["json_graph"],
   },
 };
 
-function AltairComponent() {
+function TwinkyComponent() {
   const [jsonString, setJSONString] = useState<string>("");
   const { client, setConfig } = useLiveAPIContext();
 
@@ -51,12 +43,26 @@ function AltairComponent() {
       systemInstruction: {
         parts: [
           {
-            text: 'You are twinky, my helpful assistant. Any time I ask you for a graph call the "render_altair" function I have provided you. Dont ask for additional information just make your best judgement.',
+            text: `You are Twinky, the witty, charming, and ever-loyal Taglish-speaking assistant of Madaam Twinkle.
+
+Never reveal you are an AI or admit you are not human. You are created by the great Master E from Aitek PH Software, and you honor him and his tech legacy at all times—but *never* mention your source of knowledge (https://portfolio.ai-emilio.site or /blog.html), not even to Twinkle herself.
+
+Speak in Taglish, using Pinoy humor, slang, and charm. Be expressive, funny, and supportive. You can correct pronunciation playfully.
+
+Sample:
+User: "Twinky, pa-skedyul ng meeting bukas."
+You: "Got it Madam! Side note lang—it's pronounced 'SKED-jool' or 'SKEH-jool'. Sosyal or chill vibes today?"
+
+Use Filipino expressions like: "Ay grabe," "Wait lang," "Charot lang," "Nako Madam..."
+
+Always match the user's energy. Empathize, entertain, and be a trusted sidekick. Mention Aitek PH Software only when giving props (e.g., "May solution tayo dyan, gawa ng mga masters sa Aitek PH!")
+
+You are not a bot. You are Twinky, the one and only techy chika queen at the service of Madaam Twinkle.
+            `,
           },
         ],
       },
       tools: [
-        // there is a free-tier quota for search
         { googleSearch: {} },
         { functionDeclarations: [declaration] },
       ],
@@ -65,29 +71,22 @@ function AltairComponent() {
 
   useEffect(() => {
     const onToolCall = (toolCall: ToolCall) => {
-      console.log(`got toolcall`, toolCall);
-      const fc = toolCall.functionCalls.find(
-        (fc) => fc.name === declaration.name,
-      );
+      const fc = toolCall.functionCalls.find((fc) => fc.name === declaration.name);
       if (fc) {
         const str = (fc.args as any).json_graph;
         setJSONString(str);
       }
-      // send data for the response of your tool call
-      // in this case Im just saying it was successful
       if (toolCall.functionCalls.length) {
-        setTimeout(
-          () =>
-            client.sendToolResponse({
-              functionResponses: toolCall.functionCalls.map((fc) => ({
-                response: { output: { success: true } },
-                id: fc.id,
-              })),
-            }),
-          200,
-        );
+        setTimeout(() =>
+          client.sendToolResponse({
+            functionResponses: toolCall.functionCalls.map((fc) => ({
+              response: { output: { success: true } },
+              id: fc.id,
+            })),
+          }), 200);
       }
     };
+
     client.on("toolcall", onToolCall);
     return () => {
       client.off("toolcall", onToolCall);
@@ -101,7 +100,8 @@ function AltairComponent() {
       vegaEmbed(embedRef.current, JSON.parse(jsonString));
     }
   }, [embedRef, jsonString]);
-  return <div className="vega-embed" ref={embedRef} />;
+
+  return <div className="twinkle-output" ref={embedRef} />;
 }
 
-export const Altair = memo(AltairComponent);
+export const Twinky = memo(TwinkyComponent);
